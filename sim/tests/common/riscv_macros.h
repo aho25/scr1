@@ -9,10 +9,7 @@
 //-----------------------------------------------------------------------
 // Begin Macro
 //-----------------------------------------------------------------------
-#define SC_SIM_OUTPORT(0xf0000000)					
-#define RV_PRINT(c)							\
-	li a0, (c);							\
-	sb a0, 0(a1):						
+		
 #define RVTEST_RV64U                                                    \
   .macro init;                                                          \
   .endm
@@ -178,12 +175,17 @@ _run_test:
 //-----------------------------------------------------------------------
 // Pass/Fail Macro
 //-----------------------------------------------------------------------
-
+.section .rodata
+tf:.string "fail\n"
+tc:.string "ok\n"
+.section .text
 #define RVTEST_PASS                                                     \
-        li a1,SC_SIM_OUTPORT;						\
-	RV_PRINT('o')						\
-	RV_PRINT('k')						\
-	RV_PRINT('\n")						\
+    	li a6,0xf0000000;						\
+ 	la a2,tc;							\
+1:	lbu a3,(a2);							\
+	sw a3,0(a6);							\
+	addi a2,a2,1;							\
+	bnez a3,1b;							\
 	fence;                                                          \
         mv a1, TESTNUM;                                                 \
         li  a0, 0x0;                                                    \
@@ -191,12 +193,12 @@ _run_test:
 
 #define TESTNUM x28
 #define RVTEST_FAIL                                                     \
-        li a1, SC_SIM_OUTPORT;						\
-	RV_PRINT('f')							\
-	RV_PRINT('a')							\
-	RV_PRINT('i')							\
-	RV_PRINT('l')							\
-	RV_PRINT('\n')							\
+        li a6,0xf0000000;						\
+ 	la a2,tf;							\
+1:	lbu a3,(a2);							\ 
+	sw a3,0(a6);							\
+	addi a2,a2,1; 							\
+	bnez a3,1b;							\
 	fence;                                                          \
         mv a1, TESTNUM;                                                 \
         li  a0, 0x1;                                                    \
