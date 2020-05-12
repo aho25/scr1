@@ -9,7 +9,10 @@
 //-----------------------------------------------------------------------
 // Begin Macro
 //-----------------------------------------------------------------------
-
+#define SC_SIM_OUTPORT(0xf0000000)					
+#define RV_PRINT(c)							\
+	li a0, (c);							\
+	sb a0, 0(a1):						
 #define RVTEST_RV64U                                                    \
   .macro init;                                                          \
   .endm
@@ -177,14 +180,24 @@ _run_test:
 //-----------------------------------------------------------------------
 
 #define RVTEST_PASS                                                     \
-        fence;                                                          \
+        li a1,SC_SIM_OUTPORT;						\
+	RV_PRINT('o')						\
+	RV_PRINT('k')						\
+	RV_PRINT('\n")						\
+	fence;                                                          \
         mv a1, TESTNUM;                                                 \
         li  a0, 0x0;                                                    \
         ecall
 
 #define TESTNUM x28
 #define RVTEST_FAIL                                                     \
-        fence;                                                          \
+        li a1, SC_SIM_OUTPORT;						\
+	RV_PRINT('f')							\
+	RV_PRINT('a')							\
+	RV_PRINT('i')							\
+	RV_PRINT('l')							\
+	RV_PRINT('\n')							\
+	fence;                                                          \
         mv a1, TESTNUM;                                                 \
         li  a0, 0x1;                                                    \
         ecall
