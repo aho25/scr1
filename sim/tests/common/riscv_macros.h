@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------
 // Begin Macro
 //-----------------------------------------------------------------------
-		
+
 #define RVTEST_RV64U                                                    \
   .macro init;                                                          \
   .endm
@@ -103,7 +103,7 @@
 
 #define RVTEST_CODE_BEGIN                                               \
         .section .text.init;                                            \
-        .org 0x00, 0x00;                                                \
+        .org 0xC0, 0x00;                                                \
         .align  6;                                                      \
         .weak stvec_handler;                                            \
         .weak mtvec_handler;                                            \
@@ -169,41 +169,41 @@ _run_test:
 //-----------------------------------------------------------------------
 // End Macro
 //-----------------------------------------------------------------------
+#define RVTEST_PUTCHAR(c)                                               \
+        li a0, (c);                                                     \
+        sb a0, 0(a1);
 
 #define RVTEST_CODE_END ecall: ecall
 
 //-----------------------------------------------------------------------
 // Pass/Fail Macro
 //-----------------------------------------------------------------------
-.section .rodata
-tf:.string "fail\n"
-tc:.string "ok\n"
-.section .text
+#define RVTEST_PUTCHAR(c)                                               \
+        li a0, (c);                                                     \
+        sb a0, 0(a1);
+
 #define RVTEST_PASS                                                     \
-    	li a6,0xf0000000;						\
- 	la a2,tc;							\
-1:	lbu a3,(a2);							\
-	sw a3,0(a6);							\
-	addi a2,a2,1;							\
-	bnez a3,1b;							\
-	fence;                                                          \
+        li a1, SC_SIM_OUTPORT;                                          \
+        RVTEST_PUTCHAR('o')                                             \
+        RVTEST_PUTCHAR('k')                                             \
+        RVTEST_PUTCHAR('\n')                                            \
+        fence;                                                          \
         mv a1, TESTNUM;                                                 \
         li  a0, 0x0;                                                    \
         ecall
 
 #define TESTNUM x28
 #define RVTEST_FAIL                                                     \
-        li a6,0xf0000000;						\
- 	la a2,tf;							\
-1:	lbu a3,(a2);							\ 
-	sw a3,0(a6);							\
-	addi a2,a2,1; 							\
-	bnez a3,1b;							\
-	fence;                                                          \
+        li a1, SC_SIM_OUTPORT;                                          \
+        RVTEST_PUTCHAR('f')                                             \
+        RVTEST_PUTCHAR('a')                                             \
+        RVTEST_PUTCHAR('i')                                             \
+        RVTEST_PUTCHAR('l')                                             \
+        RVTEST_PUTCHAR('\n')                                            \
+        fence;                                                          \
         mv a1, TESTNUM;                                                 \
         li  a0, 0x1;                                                    \
         ecall
-
 //-----------------------------------------------------------------------
 // Data Section Macro
 //-----------------------------------------------------------------------
@@ -831,4 +831,3 @@ pass: \
 #define TEST_DATA
 
 #endif
-
